@@ -12,6 +12,7 @@
         "symfony/yaml": "4.4.*"
     },
     "require-dev": {
+        "nelmio/cors-bundle": "^2.1"
     },
     "config": {
         "preferred-install": {
