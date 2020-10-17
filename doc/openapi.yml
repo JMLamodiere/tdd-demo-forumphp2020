@@ -1,0 +1,42 @@
+openapi: 3.0.3
+info:
+  title: TDD Demo ForumPHP 2020
+
+  version: 1.0.0
+
+# See https://swagger.io/docs/specification/paths-and-operations/
+paths:
+
+  /:
+    get:
+      summary: Get an entity by aboId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HelloWorld'
+
+# See https://swagger.io/docs/specification/components/
+components:
+
+  # See https://swagger.io/docs/specification/data-models/
+  # NB : they appear in the generated doc
+  schemas:
+    HelloWorld:
+      type: object
+      required: [ hello ]
+      properties:
+        hello:
+          type: string
+          example: world
+
+# See https://swagger.io/docs/specification/api-host-and-base-path/
+servers:
+  - url: 'https://localhost:8000'
+    description: dev
+
+  # See https://app.swaggerhub.com/help/integrations/api-auto-mocking
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/JMLamodiere/tdd-demo_forum_php_2020/1.0.0
