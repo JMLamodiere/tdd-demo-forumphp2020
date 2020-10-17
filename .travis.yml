@@ -19,6 +19,10 @@ jobs:
   include:
     - php: 7.4
 
+branches:
+  only:
+    - main
+
 before_install:
   - phpenv config-rm xdebug.ini || true
 
