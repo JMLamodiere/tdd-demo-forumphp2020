@@ -2,16 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace App\Infrastructure\Symfony\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
-class DefaultController extends AbstractController
+class HelloController extends AbstractController
 {
-    public function index(Request $request): Response
+    /**
+     * @Route("/hello", methods="GET", name="hello_world")
+     */
+    public function world(Request $request): Response
     {
         return new JsonResponse(['hello' => 'world']);
     }
