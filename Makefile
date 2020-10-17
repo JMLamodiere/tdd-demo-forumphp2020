@@ -23,8 +23,14 @@ log: ## Follow logs on local dev server
 stop: ## Stop local dev server
 	symfony server:stop
 
-test: ## Run phpunit
+test:phpunit ## Run all tests
+test:behat
+
+phpunit: ## Run phpunit
 	vendor/bin/phpunit
+
+behat: ## Run behat
+	vendor/bin/behat
 
 fix-style: ## Run php-cs-fixer
 	vendor/bin/php-cs-fixer fix --config=.php_cs.dist -v
