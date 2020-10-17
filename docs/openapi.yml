@@ -6,17 +6,31 @@ info:
 
 # See https://swagger.io/docs/specification/paths-and-operations/
 paths:
+  /runningsessions/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/RunningSessionId'
 
-  /hello:
-    get:
-      summary: Hello world
+    put:
+      summary: Register a running session
+      tags: [ Running Session ]
+      requestBody:
+        required: true
+        description: Temperature is enriched by a weather provider
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutRunningSession'
       responses:
-        '200':
-          description: OK
+        '201':
+          description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HelloWorld'
+                $ref: '#/components/schemas/RunningSession'
 
 # See https://swagger.io/docs/specification/components/
 components:
@@ -24,13 +38,34 @@ components:
   # See https://swagger.io/docs/specification/data-models/
   # NB : they appear in the generated doc
   schemas:
-    HelloWorld:
+
+    PutRunningSession:
       type: object
-      required: [ hello ]
+      required: [ id, distance, shoes ]
       properties:
-        hello:
+        id:
+          $ref: '#/components/schemas/RunningSessionId'
+        distance:
+          type: number
+          format: float
+          example: 5.5
+        shoes:
           type: string
-          example: world
+          example: 'Adadis Turbo2'
+
+    RunningSession:
+      allOf:
+        # Inherit PutRunningSession
+        - $ref: '#/components/schemas/PutRunningSession'
+      required: [ temperatureCelcius ]
+      properties:
+        temperatureCelcius:
+          type: integer
+
+    RunningSessionId:
+      type: integer
+      minimum: 1
+      example: 42
 
 # See https://swagger.io/docs/specification/api-host-and-base-path/
 servers:

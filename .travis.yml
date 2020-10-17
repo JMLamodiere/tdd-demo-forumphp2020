@@ -1,11 +1,14 @@
-# Ensure that PHP is installed in Travis' build environment. Travis provides several versions of
-# PHP like 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, etc., each of them including XDebug and PHPUnit.
-language: php
 sudo: false
+
+env:
+  global:
+    - APP_ENV = test
+
+services:
+  - docker
 
 # Travis can cache content between builds. This speeds up the build process and saves resources.
 cache:
-  yarn: true
   directories:
     # Cache composer packages so "composer install" is faster.
     - $HOME/.composer/cache/files
@@ -16,27 +19,16 @@ jobs:
   # conditions are met: The only remaining jobs are allowed to fail, or a job has already failed. In
   # these cases, the status of the build can already be determined, so there’s no need to wait around
   fast_finish: true
-  include:
-    - php: 7.4
 
 branches:
   only:
     - main
 
 before_install:
-  - phpenv config-rm xdebug.ini || true
+  - make preinstall
 
 install:
-  - composer install
+  - make install
 
 script:
-  - ./vendor/bin/phpunit
-  - ./vendor/bin/behat
-  # this checks that the source code follows the Symfony Code Syntax rules
-  - './vendor/bin/php-cs-fixer --config=.php_cs.dist fix --diff --dry-run -v'
-  # this checks that the YAML config files contain no syntax errors
-  - ./bin/console lint:yaml config --parse-tags
-  # This checks that arguments injected into services match type declarations.
-  - ./bin/console lint:container
-  # this checks that the composer.json and composer.lock files are valid
-  - composer validate --strict
+  - make test

@@ -4,6 +4,8 @@ default:
             contexts:
                 - FeatureContext:
                     kernel: '@kernel'
+                    dbal: '@doctrine.dbal.default_connection'
+                    accuweatherApiKey: '%%accuweather.apikey%%'
 
     extensions:
         Behat\Symfony2Extension:

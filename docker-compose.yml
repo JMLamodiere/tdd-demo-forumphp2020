@@ -1,0 +1,25 @@
+version: "3"
+services:
+  php:
+    build: docker/php
+    environment:
+      - APP_ENV=test
+    working_dir: "/app"
+    depends_on:
+      - database
+      - wiremock
+    volumes:
+      - "./:/app"
+      # composer
+      - "$HOME/.composer/cache/files:/var/composer/cache/files"
+
+  database:
+    build: docker/postgres
+    ports: [5432]
+    environment:
+      POSTGRES_PASSWORD: forumphp
+      POSTGRES_USER: forumphp
+
+  wiremock:
+    image: rodolpheche/wiremock
+    ports: [8080]
