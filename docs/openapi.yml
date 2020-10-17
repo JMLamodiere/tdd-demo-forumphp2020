@@ -7,9 +7,9 @@ info:
 # See https://swagger.io/docs/specification/paths-and-operations/
 paths:
 
-  /:
+  /hello:
     get:
-      summary: Get an entity by aboId
+      summary: Hello world
       responses:
         '200':
           description: OK

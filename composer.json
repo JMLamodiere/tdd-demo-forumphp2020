@@ -17,7 +17,8 @@
         "friendsofphp/php-cs-fixer": "^2.16",
         "nelmio/cors-bundle": "^2.1",
         "phpunit/phpunit": "^9.4",
-        "symfony/phpunit-bridge": "^5.1"
+        "symfony/phpunit-bridge": "^5.1",
+        "symfony/web-profiler-bundle": "4.4.*"
     },
     "config": {
         "platform": {
