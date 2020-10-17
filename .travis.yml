@@ -27,6 +27,7 @@ install:
 
 script:
   - ./vendor/bin/phpunit
+  - ./vendor/bin/behat
   # this checks that the source code follows the Symfony Code Syntax rules
   - './vendor/bin/php-cs-fixer --config=.php_cs.dist fix --diff --dry-run -v'
   # this checks that the YAML config files contain no syntax errors

@@ -24,3 +24,7 @@
 /.php_cs
 /.php_cs.cache
 ###< friendsofphp/php-cs-fixer ###
+
+###> behat/symfony2-extension ###
+behat.yml
+###< behat/symfony2-extension ###
