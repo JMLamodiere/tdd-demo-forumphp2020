@@ -47,22 +47,31 @@ preinstall: ## Pre-install steps
 install: ## Install steps
 	docker-compose run php composer install
 
-test:lint ## Run all tests
-test:phpunit
-test:behat
+test:test-static ## Run all tests (static + dynamic)
+test:test-dynamic
 
-lint: ## Run all linters
-	# Checks coding standards. Fixable with "make fix-style"
+test-static:php-cs-fixer ## Run static tests
+test-static:lint-yaml
+test-static:lint-container
+test-static:composer-validate
+
+test-dynamic:phpunit ## Run dynamic tests
+test-dynamic:behat
+
+php-cs-fixer: ## [static] Checks coding standards. Fixable with "make fix-style"
 	docker-compose run php ./vendor/bin/php-cs-fixer --config=.php_cs.dist fix --diff --dry-run -v
-	# checks that the YAML config files contain no syntax errors
+
+lint-yaml: ## [static] Checks that the YAML config files contain no syntax errors
 	docker-compose run php ./bin/console lint:yaml config --parse-tags
-	# checks that arguments injected into services match type declarations.
+
+lint-container: ## [static] Checks that arguments injected into services match type declarations.
 	docker-compose run php ./bin/console lint:container
-	# checks that the composer.json and composer.lock files are valid
+
+composer-validate: ## [static] Checks that the composer.json and composer.lock files are valid
 	docker-compose run php composer validate --strict
 
-phpunit: ## Run phpunit
+phpunit: ## [dynamic] Run phpunit
 	docker-compose run php vendor/bin/phpunit
 
-behat: ## Run behat
+behat: ## [dynamic] Run behat
 	docker-compose run php vendor/bin/behat
