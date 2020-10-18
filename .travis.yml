@@ -23,6 +23,7 @@ jobs:
 branches:
   only:
     - main
+    - bad_implementation
 
 before_install:
   - make preinstall
