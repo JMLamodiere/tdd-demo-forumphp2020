@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Http;
 
+use App\Domain\CannotGetCurrentTemperature;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use JsonException;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class RestWeatherProviderTest extends TestCase
@@ -35,13 +39,12 @@ class RestWeatherProviderTest extends TestCase
         );
     }
 
-    public function testCallGetCurrentCondition()
+    public function testGetCurrentCelciusTemperature()
     {
         /** @var ObjectProphecy|ResponseInterface $response */
         $response = $this->prophesize(ResponseInterface::class);
 
-        $observations = [new Observation($temperature = 42.9)];
-        $condition = new CurrentCondition($observations);
+        $temperature = 42.9;
 
         $uri = sprintf(
             RestWeatherProvider::CURRENT_CONDITION_URI,
@@ -52,22 +55,38 @@ class RestWeatherProviderTest extends TestCase
         $this->client->get($uri)
             ->shouldBeCalledTimes(1)
             ->willReturn($response);
-
-        $response->getStatusCode()
-            ->shouldBeCalledTimes(1)
-            ->willReturn(200);
 
         $this->serializer->deserialize($response)
             ->shouldBeCalledTimes(1)
-            ->willReturn($condition);
+            ->willReturn($temperature);
 
-        $result = $this->provider->callGetCurrentCondition();
+        $result = $this->provider->getCurrentCelciusTemperature();
 
-        self::assertSame($observations, $result->getObservations());
-        self::assertSame($temperature, $result->getObservations()[0]->getMetricTemperature());
+        self::assertSame($temperature, $result);
     }
 
-    public function testCallGetCurrentConditionException()
+    public function testGetCurrentCelciusTemperatureClientException()
+    {
+        $uri = sprintf(
+            RestWeatherProvider::CURRENT_CONDITION_URI,
+            RestWeatherProvider::LOCATION_KEY_PARIS,
+            $this->apiKey
+        );
+
+        $this->client->get($uri)
+            ->shouldBeCalledTimes(1)
+            ->willThrow(new ClientException(
+                'Not Found',
+                $this->prophesize(RequestInterface::class)->reveal(),
+                $this->prophesize(ResponseInterface::class)->reveal()
+            ));
+
+        $this->expectException(CannotGetCurrentTemperature::class);
+
+        $this->provider->getCurrentCelciusTemperature();
+    }
+
+    public function testGetCurrentCelciusTemperatureDeserializeException()
     {
         /** @var ObjectProphecy|ResponseInterface $response */
         $response = $this->prophesize(ResponseInterface::class);
@@ -82,12 +101,12 @@ class RestWeatherProviderTest extends TestCase
             ->shouldBeCalledTimes(1)
             ->willReturn($response);
 
-        $response->getStatusCode()
+        $this->serializer->deserialize($response)
             ->shouldBeCalledTimes(1)
-            ->willReturn(404);
+            ->willThrow(new JsonException());
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(CannotGetCurrentTemperature::class);
 
-        $this->provider->callGetCurrentCondition();
+        $this->provider->getCurrentCelciusTemperature();
     }
 }

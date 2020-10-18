@@ -2,11 +2,21 @@
 
 [![Build Status](https://travis-ci.com/JMLamodiere/tdd-demo-forumphp2020.svg?branch=main)](https://travis-ci.com/JMLamodiere/tdd-demo-forumphp2020)
 
-Live coding examples used during Forum PHP 2020 talk (in :fr: French) : [Trop de mock tue le test : ce que l'archi hexagonale a changé](https://event.afup.org/forum-php-2020/programme-forum-php-2020/#3414)
+Live coding examples used during Forum PHP 2020 talk (:fr: french) : [Trop de mock tue le test : ce que l'archi hexagonale a changé](https://event.afup.org/forum-php-2020/programme-forum-php-2020/#3414)
+(video not yet published).
 
-:warning: **WARNING:** The [bad_implementation](https://github.com/JMLamodiere/tdd-demo-forumphp2020/tree/bad_implementation)
-branch contains example of bad practices ! See [main](https://github.com/JMLamodiere/tdd-demo-forumphp2020) branch
-for correct implementation.
+For a bit of theory, see [De CRUD à DDD, comment Meetic a sauvé son legacy](https://afup.org/talks/3037-de-crud-a-ddd-comment-meetic-a-sauve-son-legacy) (:fr: french)
+
+## Steps by step refactoring
+
+1. [bad_implementation](https://github.com/JMLamodiere/tdd-demo-forumphp2020/tree/bad_implementation) branch
+contains :
+    - Architecture mistakes according to [Hexagonal architecture](https://alistair.cockburn.us/hexagonal-architecture/) (aka Port & Adapters)
+    - Tests too much coupled with implementation details, and an incorrect usage of mocks
+1. [bad_tests](https://github.com/JMLamodiere/tdd-demo-forumphp2020/tree/bad_tests) branch
+[(see Pull Request)](https://github.com/JMLamodiere/tdd-demo-forumphp2020/pull/12) only fixes (some) hexagonal mistakes.
+Many obscure changes are required in the tests, proving they do not help much during refactoring
+1. (todo...)
 
 ## API documentation
 

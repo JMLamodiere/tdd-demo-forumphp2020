@@ -40,6 +40,6 @@ class CurrentConditionDeserializerTest extends TestCase
 
         $result = $deserializer->deserialize($response->reveal());
 
-        self::assertSame($temperature, $result->getObservations()[0]->getMetricTemperature());
+        self::assertSame($temperature, $result);
     }
 }

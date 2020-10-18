@@ -24,6 +24,7 @@ branches:
   only:
     - main
     - bad_implementation
+    - bad_tests
 
 before_install:
   - make preinstall

@@ -6,5 +6,5 @@ namespace App\Domain;
 
 interface RunningSessionRepository
 {
-    public function add(RunningSession $session): int;
+    public function add(RunningSession $session): void;
 }
