@@ -11,22 +11,19 @@ use WireMock\Client\WireMock;
 
 class FeatureContext implements Context
 {
-    // See docker-compose.yml
-    private const WIREMOCK_HOST = 'wiremock';
-    private const WIREMOCK_PORT = '8080';
+    // See .env.test
+    private const ACCUWEATHER_API_KEY = 'accuweatherTestKey';
 
     private KernelInterface $kernel;
     private Connection $dbal;
-    private string $accuweatherApiKey;
     private WireMock $wireMock;
     private ?Response $response;
 
-    public function __construct(KernelInterface $kernel, Connection $dbal, string $accuweatherApiKey)
+    public function __construct(KernelInterface $kernel, Connection $dbal, WireMock $wireMock)
     {
         $this->kernel = $kernel;
-        $this->wireMock = WireMock::create(self::WIREMOCK_HOST, self::WIREMOCK_PORT);
+        $this->wireMock = $wireMock;
         Assert::assertTrue($this->wireMock->isAlive(), 'Wiremock should be alive');
-        $this->accuweatherApiKey = $accuweatherApiKey;
         $this->dbal = $dbal;
     }
 
@@ -44,7 +41,7 @@ class FeatureContext implements Context
      */
     public function currentTemperatureIs($temperature)
     {
-        $uri = '/currentconditions/v1/623?apikey='.$this->accuweatherApiKey;
+        $uri = '/currentconditions/v1/623?apikey='.self::ACCUWEATHER_API_KEY;
         $body = <<<EOD
 [{
 	"LocalObservationDateTime": "2020-10-17T17:50:00+02:00",
