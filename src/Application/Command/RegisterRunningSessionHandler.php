@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace App\Application\Command;
 
-use App\Domain\RestWeatherProviderInterface;
 use App\Domain\RunningSession;
 use App\Domain\RunningSessionRepository;
-use Webmozart\Assert\Assert;
+use App\Domain\WeatherProvider;
 
 class RegisterRunningSessionHandler
 {
-    private RestWeatherProviderInterface $weatherProvider;
+    private WeatherProvider $weatherProvider;
     private RunningSessionRepository $repository;
 
-    public function __construct(RestWeatherProviderInterface $weatherProvider, RunningSessionRepository $repository)
+    public function __construct(WeatherProvider $weatherProvider, RunningSessionRepository $repository)
     {
         $this->weatherProvider = $weatherProvider;
         $this->repository = $repository;
@@ -22,16 +21,13 @@ class RegisterRunningSessionHandler
 
     public function handle(RegisterRunningSession $command): RunningSession
     {
-        $currentCondition = $this->weatherProvider->callGetCurrentCondition();
-        $observations = $currentCondition->getObservations();
-        Assert::notEmpty($observations, 'observations should not be empty');
-        $observation = reset($observations);
+        $currentTemperature = $this->weatherProvider->getCurrentCelciusTemperature();
 
         $session = new RunningSession(
             $command->getId(),
             $command->getDistance(),
             $command->getShoes(),
-            $observation->getMetricTemperature()
+            $currentTemperature
         );
 
         $this->repository->add($session);

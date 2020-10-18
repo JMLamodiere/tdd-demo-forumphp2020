@@ -73,10 +73,8 @@ class PostgresRunningSessionRepositoryTest extends TestCase
             ->willReturn($queryBuilder);
         $queryBuilder->execute()
             ->shouldBeCalledTimes(1)
-            ->willReturn($affectedRows = 1);
+            ->willReturn(1);
 
-        $result = $this->repository->add($session->reveal());
-
-        self::assertSame($affectedRows, $result);
+        $this->repository->add($session->reveal());
     }
 }

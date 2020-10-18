@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Http;
 
-use App\Domain\RestWeatherProviderInterface;
+use App\Domain\CannotGetCurrentTemperature;
+use App\Domain\WeatherProvider;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
-class RestWeatherProvider implements RestWeatherProviderInterface
+class RestWeatherProvider implements WeatherProvider
 {
     public const CURRENT_CONDITION_URI = 'currentconditions/v1/%d?apikey=%s';
     public const LOCATION_KEY_PARIS = 623;
@@ -23,15 +25,23 @@ class RestWeatherProvider implements RestWeatherProviderInterface
         $this->serializer = $serializer;
     }
 
-    public function callGetCurrentCondition(): CurrentCondition
+    /**
+     * @throws CannotGetCurrentTemperature
+     */
+    public function getCurrentCelciusTemperature(): float
     {
         $uri = sprintf(self::CURRENT_CONDITION_URI, self::LOCATION_KEY_PARIS, $this->apiKey);
-        $response = $this->client->get($uri);
 
-        if ($response->getStatusCode() >= 400) {
-            throw new \RuntimeException('Cannot retrieve current condition');
+        try {
+            $response = $this->client->get($uri);
+        } catch (GuzzleException $previous) {
+            throw new CannotGetCurrentTemperature('Cannot retrieve current condition', 0, $previous);
         }
 
-        return $this->serializer->deserialize($response);
+        try {
+            return $this->serializer->deserialize($response);
+        } catch (\Exception $previous) {
+            throw new CannotGetCurrentTemperature('Cannot decode current condition', 0, $previous);
+        }
     }
 }

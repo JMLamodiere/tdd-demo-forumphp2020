@@ -19,7 +19,7 @@ class PostgresRunningSessionRepository implements RunningSessionRepository
         $this->dbal = $dbal;
     }
 
-    public function add(RunningSession $session): int
+    public function add(RunningSession $session): void
     {
         $queryBuilder = $this->dbal->createQueryBuilder();
 
@@ -31,6 +31,6 @@ class PostgresRunningSessionRepository implements RunningSessionRepository
             ->setValue('TEMPERATURE_CELCIUS', ':celcius')->setParameter(':celcius', $session->getMetricTemperature())
         ;
 
-        return $queryBuilder->execute();
+        $queryBuilder->execute();
     }
 }
