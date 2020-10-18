@@ -5,7 +5,7 @@ default:
                 - FeatureContext:
                     kernel: '@kernel'
                     dbal: '@doctrine.dbal.default_connection'
-                    accuweatherApiKey: '%%accuweather.apikey%%'
+                    wireMock: '@WireMock\Client\WireMock'
 
     extensions:
         Behat\Symfony2Extension:

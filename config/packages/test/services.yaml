@@ -1,0 +1,9 @@
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        public: true
+
+    WireMock\Client\WireMock:
+        factory: ['WireMock\Client\WireMock', 'create']
+        # See docker-compose.yml
+        arguments: ['wiremock', '8080']
