@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/JMLamodiere/tdd-demo-forumphp2020.svg?branch=main)](https://travis-ci.com/JMLamodiere/tdd-demo-forumphp2020)
 
-Forum PHP 2020 talk (in French) : [Trop de mock tue le test : ce que l'archi hexagonale a changé](https://event.afup.org/forum-php-2020/programme-forum-php-2020/#3414)
+Live coding examples used during Forum PHP 2020 talk (in :fr: French) : [Trop de mock tue le test : ce que l'archi hexagonale a changé](https://event.afup.org/forum-php-2020/programme-forum-php-2020/#3414)
 
 :warning: **WARNING:** The [bad_implementation](https://github.com/JMLamodiere/tdd-demo-forumphp2020/tree/bad_implementation)
 branch contains example of bad practices ! See [main](https://github.com/JMLamodiere/tdd-demo-forumphp2020) branch
