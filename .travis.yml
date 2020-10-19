@@ -27,6 +27,7 @@ branches:
     - bad_implementation
     - bad_tests
     - integration_infra_medium_domain
+    - integration_infra_medium_domain_wiremock
 
 before_install:
   - make preinstall

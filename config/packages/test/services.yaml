@@ -1,3 +1,7 @@
+parameters:
+    # See .env.test
+    accuweather.apikey: '%env(ACCUWEATHER_API_KEY)%'
+
 services:
     # default configuration for services in *this* file
     _defaults:
