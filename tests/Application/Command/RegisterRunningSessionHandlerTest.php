@@ -8,7 +8,6 @@ use App\Domain\RunningSession;
 use App\Domain\RunningSessionRepository;
 use App\Domain\WeatherProvider;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
@@ -33,28 +32,43 @@ class RegisterRunningSessionHandlerTest extends TestCase
         );
     }
 
-    public function testHandle()
+    public function testTheRunningSessionIRegisterIsEnrichedWithCurrentWeatherData()
     {
-        $temperature = 15.5;
-        /** @var ObjectProphecy|RegisterRunningSession $command */
-        $command = $this->prophesize(RegisterRunningSession::class);
-        $command->getId()
-            ->shouldBeCalledTimes(1)
-            ->willReturn(12);
-        $command->getDistance()
-            ->shouldBeCalledTimes(1)
-            ->willReturn(25.7);
-        $command->getShoes()
-            ->shouldBeCalledTimes(1)
-            ->willReturn('shoes');
+        //Given (Arrange)
+        $this->givenCrrentTemperatureIs(15.5);
 
-        $this->weatherProvider->getCurrentCelciusTemperature()
-            ->shouldBeCalledTimes(1)
+        //When (Act)
+        $this->whenIRegisterARunningSession(new RegisterRunningSession(
+            12,
+            125.7,
+            'shoes'
+        ));
+
+        //Then (Assert)
+        $this->thenARunningSessionShouldBeAdded(new RunningSession(
+            12,
+            125.7,
+            'shoes',
+            15.5
+        ));
+    }
+
+    private function givenCrrentTemperatureIs(float $temperature): void
+    {
+        $this->weatherProvider
+            ->getCurrentCelciusTemperature()
             ->willReturn($temperature);
+    }
 
-        $this->repository->add(Argument::type(RunningSession::class))
-            ->shouldBeCalledTimes(1);
+    private function whenIRegisterARunningSession(RegisterRunningSession $command): void
+    {
+        $this->handler->handle($command);
+    }
 
-        $this->handler->handle($command->reveal());
+    private function thenARunningSessionShouldBeAdded(RunningSession $expectedAddedEntity)
+    {
+        $this->repository
+            ->add($expectedAddedEntity)
+            ->shouldHaveBeenCalled();
     }
 }

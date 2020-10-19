@@ -21,10 +21,12 @@ jobs:
   fast_finish: true
 
 branches:
+  # Those branch will not be deleted. We want push to them without a Pull Request, but trigger the CI anyway
   only:
     - main
     - bad_implementation
     - bad_tests
+    - integration_infra_medium_domain
 
 before_install:
   - make preinstall
