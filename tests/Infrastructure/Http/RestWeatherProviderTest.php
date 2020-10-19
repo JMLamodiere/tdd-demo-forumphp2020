@@ -5,43 +5,35 @@ declare(strict_types=1);
 namespace App\Infrastructure\Http;
 
 use App\Domain\CannotGetCurrentTemperature;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Promise\PromiseInterface;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
-use PHPUnit\Framework\TestCase;
-use Prophecy\PhpUnit\ProphecyTrait;
-use Psr\Http\Message\ResponseInterface;
-use Throwable;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use WireMock\Client\WireMock;
 
-class RestWeatherProviderTest extends TestCase
+class RestWeatherProviderTest extends KernelTestCase
 {
-    use ProphecyTrait;
-
-    private MockHandler $guzzleMockHandler;
-    private string $apiKey;
     private RestWeatherProvider $provider;
+    private WireMock $wireMock;
+    private string $currentConditionUri;
 
     protected function setUp(): void
     {
-        $this->guzzleMockHandler = new MockHandler();
-        $guzzleClient = new Client(['handler' => new HandlerStack($this->guzzleMockHandler)]);
+        self::bootKernel();
 
-        $this->apiKey = 'key';
-        $this->provider = new RestWeatherProvider(
-            $guzzleClient,
-            $this->apiKey,
-            new CurrentConditionDeserializer()
-        );
+        $this->provider = self::$container->get(RestWeatherProvider::class);
+
+        $this->wireMock = self::$container->get(WireMock::class);
+        self::assertTrue($this->wireMock->isAlive(), 'Wiremock should be alive');
+
+        $accuweatherApiKey = self::$container->getParameter('accuweather.apikey');
+        $this->currentConditionUri = '/currentconditions/v1/623?apikey='.$accuweatherApiKey;
     }
 
     public function testTemperatureIsExtractedFrom200Response()
     {
         // Given (Arrange)
-        $this->givenAccuWeatherResponseIs(new Response(200, ['Content-Type' => 'application/json'], <<<EOD
+        $this->wireMock->stubFor(WireMock::get(WireMock::urlEqualTo($this->currentConditionUri))
+            ->willReturn(WireMock::aResponse()
+                ->withHeader('Content-Type', 'application/json')
+                ->withBody(<<<EOD
 [{
 	"LocalObservationDateTime": "2020-10-17T17:50:00+02:00",
 	"EpochTime": 1602949800,
@@ -65,23 +57,21 @@ class RestWeatherProviderTest extends TestCase
 	"MobileLink": "http://m.accuweather.com/en/fr/paris/623/current-weather/623?lang=en-us",
 	"Link": "http://www.accuweather.com/en/fr/paris/623/current-weather/623?lang=en-us"
 }]
-EOD));
+EOD)));
 
         // When (Act)
         $result = $this->provider->getCurrentCelciusTemperature();
 
         // Then (Assert)
         self::assertSame(37.2, $result);
-
-        $this->thenRequestSentShouldHaveBeen('GET', 'currentconditions/v1/623?apikey='.$this->apiKey);
     }
 
     public function test404ResponseIsConvertedToDomainException()
     {
         // Given (Arrange)
-        $this->givenAccuWeatherResponseIs(RequestException::create(
-            new Request('GET', 'uri'),
-            new Response(404)
+        $this->wireMock->stubFor(WireMock::get(WireMock::urlEqualTo($this->currentConditionUri))
+            ->willReturn(WireMock::aResponse()
+                ->withStatus(404)
         ));
 
         // Then (Assert)
@@ -94,29 +84,15 @@ EOD));
     public function testInvalidBodyIsConvertedToDomainException()
     {
         // Given (Arrange)
-        $this->givenAccuWeatherResponseIs(
-            new Response(200, ['Content-Type' => 'application/json'], 'invalid body')
-        );
+        $this->wireMock->stubFor(WireMock::get(WireMock::urlEqualTo($this->currentConditionUri))
+            ->willReturn(WireMock::aResponse()
+                ->withHeader('Content-Type', 'application/json')
+                ->withBody('invalid body')));
 
         // Then (Assert)
         $this->expectException(CannotGetCurrentTemperature::class);
 
         // When (Act)
         $this->provider->getCurrentCelciusTemperature();
-    }
-
-    /**
-     * @param ResponseInterface|Throwable|PromiseInterface|callable $response
-     */
-    private function givenAccuWeatherResponseIs($response)
-    {
-        $this->guzzleMockHandler->append($response);
-    }
-
-    private function thenRequestSentShouldHaveBeen(string $method, string $uri)
-    {
-        $requestSent = $this->guzzleMockHandler->getLastRequest();
-        self::assertSame($method, $requestSent->getMethod());
-        self::assertSame($uri, (string) $requestSent->getUri());
     }
 }

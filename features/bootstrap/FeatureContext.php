@@ -11,20 +11,19 @@ use WireMock\Client\WireMock;
 
 class FeatureContext implements Context
 {
-    // See .env.test
-    private const ACCUWEATHER_API_KEY = 'accuweatherTestKey';
-
     private KernelInterface $kernel;
     private Connection $dbal;
     private WireMock $wireMock;
     private ?Response $response;
+    private string $accuweatherApiKey;
 
-    public function __construct(KernelInterface $kernel, Connection $dbal, WireMock $wireMock)
+    public function __construct(KernelInterface $kernel, Connection $dbal, WireMock $wireMock, string $accuweatherApiKey)
     {
         $this->kernel = $kernel;
         $this->wireMock = $wireMock;
         Assert::assertTrue($this->wireMock->isAlive(), 'Wiremock should be alive');
         $this->dbal = $dbal;
+        $this->accuweatherApiKey = $accuweatherApiKey;
     }
 
     /**
@@ -41,7 +40,7 @@ class FeatureContext implements Context
      */
     public function currentTemperatureIs($temperature)
     {
-        $uri = '/currentconditions/v1/623?apikey='.self::ACCUWEATHER_API_KEY;
+        $uri = '/currentconditions/v1/623?apikey='.$this->accuweatherApiKey;
         $body = <<<EOD
 [{
 	"LocalObservationDateTime": "2020-10-17T17:50:00+02:00",

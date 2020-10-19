@@ -20,6 +20,10 @@ Many obscure changes are required in the tests, proving they do not help much du
 [(see Pull Request)](https://github.com/JMLamodiere/tdd-demo-forumphp2020/pull/13) split tests this way:
     - Domain logic (Application/Domain folders): medium Unit tests, mocking only infrastructure
     - Technical logic (Infrastructure folder): integration tests for each specific technology
+1. [integration_infra_medium_domain_wiremock](https://github.com/JMLamodiere/tdd-demo-forumphp2020/tree/integration_infra_medium_domain_wiremock) branch
+[(see Pull Request)](https://github.com/JMLamodiere/tdd-demo-forumphp2020/pull/14)
+only replaces [Guzzle MockHandler](https://docs.guzzlephp.org/en/stable/testing.html) with [Wiremock](#wiremock),
+decoupling HTTP tests with the library being used for HTTP calls.
 1. (todo...)
 
 ## API documentation
