@@ -6,75 +6,56 @@ namespace App\Infrastructure\Database;
 
 use App\Domain\RunningSession;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Query\QueryBuilder;
-use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
-use Prophecy\Prophecy\ObjectProphecy;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class PostgresRunningSessionRepositoryTest extends TestCase
+/**
+ * @group integration
+ */
+class PostgresRunningSessionRepositoryTest extends KernelTestCase
 {
-    use ProphecyTrait;
-
-    /** @var ObjectProphecy|Connection */
-    private $dbal;
-
+    private Connection $dbal;
     private PostgresRunningSessionRepository $repository;
 
     protected function setUp(): void
     {
-        $this->dbal = $this->prophesize(Connection::class);
-        $this->repository = new PostgresRunningSessionRepository($this->dbal->reveal());
+        self::bootKernel();
+        $this->dbal = self::$container->get('doctrine.dbal.default_connection');
+        $this->repository = self::$container->get(PostgresRunningSessionRepository::class);
+        $this->resetState();
     }
 
-    public function testAdd()
+    private function resetState(): void
     {
-        /** @var ObjectProphecy|QueryBuilder $queryBuilder */
-        $queryBuilder = $this->prophesize(QueryBuilder::class);
+        $this->dbal->executeStatement('TRUNCATE TABLE '.PostgresRunningSessionRepository::TABLE_NAME);
+    }
 
-        /** @var ObjectProphecy|RunningSession $session */
-        $session = $this->prophesize(RunningSession::class);
-        $session->getId()
-            ->shouldBeCalledTimes(1)
-            ->willReturn($id = 12);
-        $session->getDistance()
-            ->shouldBeCalledTimes(1)
-            ->willReturn($distance = 25.7);
-        $session->getShoes()
-            ->shouldBeCalledTimes(1)
-            ->willReturn($shoes = 'shoes');
-        $session->getMetricTemperature()
-            ->shouldBeCalledTimes(1)
-            ->willReturn($temperature = 25.3);
+    public function testRunningSessionIsInserted()
+    {
+        //When (Act)
+        $session = new RunningSession(55, 122.3, 'The shoes!', 34.5);
+        $this->repository->add($session);
 
-        $this->dbal->createQueryBuilder()
-            ->shouldBeCalledTimes(1)
-            ->willReturn($queryBuilder);
+        //Then (Assert)
+        $this->thenRunningSessionTableShouldContain(55, [
+            //DB result will be strings
+            'distance' => '122.3',
+            'shoes' => 'The shoes!',
+            'temperature_celcius' => '34.5',
+        ]);
+    }
 
-        $queryBuilder->insert(PostgresRunningSessionRepository::TABLE_NAME)
-            ->shouldBeCalledTimes(1)
-            ->willReturn($queryBuilder);
+    private function thenRunningSessionTableShouldContain(int $id, array $expectedArray)
+    {
+        $row = $this->dbal->fetchAssociative(
+            'SELECT distance, shoes, temperature_celcius '
+            .' FROM RUNNING_SESSION'
+            .' WHERE ID = :id', [':id' => $id]);
 
-        $queryBuilder->setValue(Argument::cetera())
-            ->shouldBeCalledTimes(4)
-            ->willReturn($queryBuilder);
+        self::assertIsArray($row, 'No session found with this id');
 
-        $queryBuilder->setParameter(':id', $id)
-            ->shouldBeCalledTimes(1)
-            ->willReturn($queryBuilder);
-        $queryBuilder->setParameter(':distance', $distance)
-            ->shouldBeCalledTimes(1)
-            ->willReturn($queryBuilder);
-        $queryBuilder->setParameter(':shoes', $shoes)
-            ->shouldBeCalledTimes(1)
-            ->willReturn($queryBuilder);
-        $queryBuilder->setParameter(':celcius', $temperature)
-            ->shouldBeCalledTimes(1)
-            ->willReturn($queryBuilder);
-        $queryBuilder->execute()
-            ->shouldBeCalledTimes(1)
-            ->willReturn(1);
-
-        $this->repository->add($session->reveal());
+        //Avoid failing if key order is different
+        asort($row);
+        asort($expectedArray);
+        self::assertSame($expectedArray, $row);
     }
 }

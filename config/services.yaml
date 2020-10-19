@@ -27,6 +27,11 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # Mark Command/Query handlers public to allow mocking them in controller tests
+    App\Application\Command\RegisterRunningSessionHandler:
+        public: true
+
     guzzle.accuweather:
         class: GuzzleHttp\Client
         arguments:

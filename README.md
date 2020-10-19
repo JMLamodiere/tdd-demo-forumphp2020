@@ -16,6 +16,10 @@ contains :
 1. [bad_tests](https://github.com/JMLamodiere/tdd-demo-forumphp2020/tree/bad_tests) branch
 [(see Pull Request)](https://github.com/JMLamodiere/tdd-demo-forumphp2020/pull/12) only fixes (some) hexagonal mistakes.
 Many obscure changes are required in the tests, proving they do not help much during refactoring
+1. [integration_infra_medium_domain](https://github.com/JMLamodiere/tdd-demo-forumphp2020/tree/integration_infra_medium_domain) branch
+[(see Pull Request)](https://github.com/JMLamodiere/tdd-demo-forumphp2020/pull/13) split tests this way:
+    - Domain logic (Application/Domain folders): medium Unit tests, mocking only infrastructure
+    - Technical logic (Infrastructure folder): integration tests for each specific technology
 1. (todo...)
 
 ## API documentation

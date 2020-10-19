@@ -60,7 +60,8 @@ components:
       required: [ temperatureCelcius ]
       properties:
         temperatureCelcius:
-          type: integer
+          type: float
+          example: 37.2
 
     RunningSessionId:
       type: integer

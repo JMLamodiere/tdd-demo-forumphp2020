@@ -7,74 +7,77 @@ namespace App\Infrastructure\Symfony\Controller;
 use App\Application\Command\RegisterRunningSession;
 use App\Application\Command\RegisterRunningSessionHandler;
 use App\Domain\RunningSession;
-use App\Infrastructure\Symfony\Serializer\RegisterRunningSessionDeserializer;
-use App\Infrastructure\Symfony\Serializer\RunningSessionNormalizer;
-use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class RunningSessionControllerTest extends TestCase
+class RunningSessionControllerTest extends KernelTestCase
 {
     use ProphecyTrait;
 
-    /** @var ObjectProphecy|RegisterRunningSessionDeserializer */
-    private $commandDeserializer;
-    /** @var ObjectProphecy|RunningSessionNormalizer */
-    private $responseNormalizer;
     /** @var ObjectProphecy|RegisterRunningSessionHandler */
     private $registerRunningSessionHandler;
 
-    private RunningSessionController $controller;
-
     protected function setUp(): void
     {
-        $this->commandDeserializer = $this->prophesize(RegisterRunningSessionDeserializer::class);
-        $this->responseNormalizer = $this->prophesize(RunningSessionNormalizer::class);
-        $this->registerRunningSessionHandler = $this->prophesize(RegisterRunningSessionHandler::class);
+        self::bootKernel();
 
-        $this->controller = new RunningSessionController(
-            $this->commandDeserializer->reveal(),
-            $this->responseNormalizer->reveal(),
-            $this->registerRunningSessionHandler->reveal()
-        );
+        $this->registerRunningSessionHandler = $this->prophesize(RegisterRunningSessionHandler::class);
+        self::$container->set(RegisterRunningSessionHandler::class, $this->registerRunningSessionHandler->reveal());
     }
 
-    public function testPut()
+    public function testPutRouteSendsCommandToHandlerAndDisplayItsResult()
     {
-        $id = 42;
-        /** @var ObjectProphecy|Request $request */
-        $request = $this->prophesize(Request::class);
-        /** @var ObjectProphecy|RegisterRunningSession $command */
-        $command = $this->prophesize(RegisterRunningSession::class);
-        /** @var ObjectProphecy|RegisterRunningSession $command */
-        $session = $this->prophesize(RunningSession::class);
-        $data = ['normalized' => 'data'];
+        //Given (Arrange)
+        $this->givenHandlerResponseIs(new RunningSession(42, 5.5, 'Adadis Turbo2', 37.2));
 
-        $request->getContent()
-            ->shouldBeCalledTimes(1)
-            ->willReturn($content = 'my content');
+        //When (Act)
+        $response = $this->whenISendThisRequest(Request::create('/runningsessions/42', 'PUT', [], [], [], [], <<<EOD
+{
+  "id": 42,
+  "distance": 5.5,
+  "shoes": "Adadis Turbo2"
+}
+EOD
+        ));
 
-        $this->commandDeserializer->deserialize($content)
-            ->shouldBeCalledTimes(1)
-            ->willReturn($command);
+        //Then (Assert)
+        $this->thenThisCommandHasBeenSentToHandler(new RegisterRunningSession(42, 5.5, 'Adadis Turbo2'));
+        $this->thenTheResponseIs(201, <<<EOD
+{
+  "id": 42,
+  "distance": 5.5,
+  "shoes": "Adadis Turbo2",
+  "temperatureCelcius": 37.2
+}
+EOD, $response);
+    }
 
-        $command->getId()
-            ->shouldBeCalledTimes(1)
-            ->willReturn($id);
+    private function givenHandlerResponseIs(RunningSession $handlerResponse)
+    {
+        $this->registerRunningSessionHandler
+            ->handle(Argument::cetera())
+            ->willReturn($handlerResponse);
+    }
 
-        $this->registerRunningSessionHandler->handle($command)
-            ->shouldBeCalledTimes(1)
-            ->willReturn($session);
+    private function whenISendThisRequest(Request $request): Response
+    {
+        return self::$kernel->handle($request);
+    }
 
-        $this->responseNormalizer->normalize($session)
-            ->shouldBeCalledTimes(1)
-            ->willReturn($data);
+    private function thenThisCommandHasBeenSentToHandler(RegisterRunningSession $expectedCommand)
+    {
+        $this->registerRunningSessionHandler
+            ->handle($expectedCommand)
+            ->shouldHaveBeenCalled();
+    }
 
-        $result = $this->controller->put((string) $id, $request->reveal());
-
-        self::assertSame('{"normalized":"data"}', $result->getContent());
-        self::assertSame(Response::HTTP_CREATED, $result->getStatusCode());
+    private function thenTheResponseIs(int $statusCode, string $expectedPayload, Response $response)
+    {
+        self::assertSame($statusCode, $response->getStatusCode());
+        self::assertJsonStringEqualsJsonString($expectedPayload, $response->getContent());
     }
 }

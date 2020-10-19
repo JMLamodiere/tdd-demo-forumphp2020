@@ -6,107 +6,117 @@ namespace App\Infrastructure\Http;
 
 use App\Domain\CannotGetCurrentTemperature;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ClientException;
-use JsonException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Prophecy\Prophecy\ObjectProphecy;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Throwable;
 
 class RestWeatherProviderTest extends TestCase
 {
     use ProphecyTrait;
 
-    /** @var ObjectProphecy|Client */
-    private $client;
+    private MockHandler $guzzleMockHandler;
     private string $apiKey;
-    /** @var ObjectProphecy|CurrentConditionDeserializer */
-    private $serializer;
-
     private RestWeatherProvider $provider;
 
     protected function setUp(): void
     {
-        $this->client = $this->prophesize(Client::class);
-        $this->apiKey = 'key';
-        $this->serializer = $this->prophesize(CurrentConditionDeserializer::class);
+        $this->guzzleMockHandler = new MockHandler();
+        $guzzleClient = new Client(['handler' => new HandlerStack($this->guzzleMockHandler)]);
 
+        $this->apiKey = 'key';
         $this->provider = new RestWeatherProvider(
-            $this->client->reveal(),
+            $guzzleClient,
             $this->apiKey,
-            $this->serializer->reveal()
+            new CurrentConditionDeserializer()
         );
     }
 
-    public function testGetCurrentCelciusTemperature()
+    public function testTemperatureIsExtractedFrom200Response()
     {
-        /** @var ObjectProphecy|ResponseInterface $response */
-        $response = $this->prophesize(ResponseInterface::class);
+        // Given (Arrange)
+        $this->givenAccuWeatherResponseIs(new Response(200, ['Content-Type' => 'application/json'], <<<EOD
+[{
+	"LocalObservationDateTime": "2020-10-17T17:50:00+02:00",
+	"EpochTime": 1602949800,
+	"WeatherText": "Mostly cloudy",
+	"WeatherIcon": 6,
+	"HasPrecipitation": false,
+	"PrecipitationType": null,
+	"IsDayTime": true,
+	"Temperature": {
+		"Metric": {
+			"Value": 37.2,
+			"Unit": "C",
+			"UnitType": 17
+		},
+		"Imperial": {
+			"Value": 55.0,
+			"Unit": "F",
+			"UnitType": 18
+		}
+	},
+	"MobileLink": "http://m.accuweather.com/en/fr/paris/623/current-weather/623?lang=en-us",
+	"Link": "http://www.accuweather.com/en/fr/paris/623/current-weather/623?lang=en-us"
+}]
+EOD));
 
-        $temperature = 42.9;
-
-        $uri = sprintf(
-            RestWeatherProvider::CURRENT_CONDITION_URI,
-            RestWeatherProvider::LOCATION_KEY_PARIS,
-            $this->apiKey
-        );
-
-        $this->client->get($uri)
-            ->shouldBeCalledTimes(1)
-            ->willReturn($response);
-
-        $this->serializer->deserialize($response)
-            ->shouldBeCalledTimes(1)
-            ->willReturn($temperature);
-
+        // When (Act)
         $result = $this->provider->getCurrentCelciusTemperature();
 
-        self::assertSame($temperature, $result);
+        // Then (Assert)
+        self::assertSame(37.2, $result);
+
+        $this->thenRequestSentShouldHaveBeen('GET', 'currentconditions/v1/623?apikey='.$this->apiKey);
     }
 
-    public function testGetCurrentCelciusTemperatureClientException()
+    public function test404ResponseIsConvertedToDomainException()
     {
-        $uri = sprintf(
-            RestWeatherProvider::CURRENT_CONDITION_URI,
-            RestWeatherProvider::LOCATION_KEY_PARIS,
-            $this->apiKey
-        );
+        // Given (Arrange)
+        $this->givenAccuWeatherResponseIs(RequestException::create(
+            new Request('GET', 'uri'),
+            new Response(404)
+        ));
 
-        $this->client->get($uri)
-            ->shouldBeCalledTimes(1)
-            ->willThrow(new ClientException(
-                'Not Found',
-                $this->prophesize(RequestInterface::class)->reveal(),
-                $this->prophesize(ResponseInterface::class)->reveal()
-            ));
-
+        // Then (Assert)
         $this->expectException(CannotGetCurrentTemperature::class);
 
+        // When (Act)
         $this->provider->getCurrentCelciusTemperature();
     }
 
-    public function testGetCurrentCelciusTemperatureDeserializeException()
+    public function testInvalidBodyIsConvertedToDomainException()
     {
-        /** @var ObjectProphecy|ResponseInterface $response */
-        $response = $this->prophesize(ResponseInterface::class);
-
-        $uri = sprintf(
-            RestWeatherProvider::CURRENT_CONDITION_URI,
-            RestWeatherProvider::LOCATION_KEY_PARIS,
-            $this->apiKey
+        // Given (Arrange)
+        $this->givenAccuWeatherResponseIs(
+            new Response(200, ['Content-Type' => 'application/json'], 'invalid body')
         );
 
-        $this->client->get($uri)
-            ->shouldBeCalledTimes(1)
-            ->willReturn($response);
-
-        $this->serializer->deserialize($response)
-            ->shouldBeCalledTimes(1)
-            ->willThrow(new JsonException());
-
+        // Then (Assert)
         $this->expectException(CannotGetCurrentTemperature::class);
 
+        // When (Act)
         $this->provider->getCurrentCelciusTemperature();
+    }
+
+    /**
+     * @param ResponseInterface|Throwable|PromiseInterface|callable $response
+     */
+    private function givenAccuWeatherResponseIs($response)
+    {
+        $this->guzzleMockHandler->append($response);
+    }
+
+    private function thenRequestSentShouldHaveBeen(string $method, string $uri)
+    {
+        $requestSent = $this->guzzleMockHandler->getLastRequest();
+        self::assertSame($method, $requestSent->getMethod());
+        self::assertSame($uri, (string) $requestSent->getUri());
     }
 }
