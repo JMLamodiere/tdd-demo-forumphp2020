@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Infrastructure\Http;
 
 use App\Domain\CannotGetCurrentTemperature;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use GuzzleHttp\Client;
+use PHPUnit\Framework\TestCase;
 use WireMock\Client\WireMock;
 
-class RestWeatherProviderTest extends KernelTestCase
+class RestWeatherProviderTest extends TestCase
 {
     private RestWeatherProvider $provider;
     private WireMock $wireMock;
@@ -16,14 +17,22 @@ class RestWeatherProviderTest extends KernelTestCase
 
     protected function setUp(): void
     {
-        self::bootKernel();
+        $accuweatherApiKey = 'myApiKey';
+        // See docker-compose.yml
+        $host = 'wiremock';
+        $port = '8080';
 
-        $this->provider = self::$container->get(RestWeatherProvider::class);
+        $this->provider = new RestWeatherProvider(
+            // See https://docs.guzzlephp.org/en/stable/quickstart.html#creating-a-client
+            new Client(['base_uri' => "http://$host:$port/"]),
+            $accuweatherApiKey,
+            new CurrentConditionDeserializer()
+        );
 
-        $this->wireMock = self::$container->get(WireMock::class);
+        // See docker-compose.yml
+        $this->wireMock = WireMock::create($host, $port);
         self::assertTrue($this->wireMock->isAlive(), 'Wiremock should be alive');
 
-        $accuweatherApiKey = self::$container->getParameter('accuweather.apikey');
         $this->currentConditionUri = '/currentconditions/v1/623?apikey='.$accuweatherApiKey;
     }
 

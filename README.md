@@ -9,6 +9,8 @@ For a bit of theory, see [De CRUD à DDD, comment Meetic a sauvé son legacy](ht
 
 ## Steps by step refactoring
 
+:warning: **Warning** : Only steps 1 & 2 are really considered *bad*. Next steps just show different testing styles.
+
 1. [bad_implementation](https://github.com/JMLamodiere/tdd-demo-forumphp2020/tree/bad_implementation) branch
 contains :
     - Architecture mistakes according to [Hexagonal architecture](https://alistair.cockburn.us/hexagonal-architecture/) (aka Port & Adapters)
@@ -24,6 +26,10 @@ Many obscure changes are required in the tests, proving they do not help much du
 [(see Pull Request)](https://github.com/JMLamodiere/tdd-demo-forumphp2020/pull/14)
 only replaces [Guzzle MockHandler](https://docs.guzzlephp.org/en/stable/testing.html) with [Wiremock](#wiremock),
 decoupling HTTP tests with the library being used for HTTP calls.
+1. [integration_infra_medium_domain_no_di](https://github.com/JMLamodiere/tdd-demo-forumphp2020/tree/integration_infra_medium_domain_no_di) branch
+   [(see Pull Request)](https://github.com/JMLamodiere/tdd-demo-forumphp2020/pull/15)
+   removes [Dependency Injection Container](https://www.loosecouplings.com/2011/01/dependency-injection-using-di-container.html)
+   usage and manually build tested classes instead.
 1. (todo...)
 
 ## API documentation
