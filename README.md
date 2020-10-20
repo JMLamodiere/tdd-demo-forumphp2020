@@ -41,7 +41,12 @@ decoupling HTTP tests with the library being used for HTTP calls.
 
 - Local : [docs/openapi.yml](docs/openapi.yml)
 - Github Pages : https://jmlamodiere.github.io/tdd-demo-forumphp2020
-- Swaggger Hub (with online mock) : https://app.swaggerhub.com/apis/JMLamodiere/tdd-demo_forum_php_2020/1.0.0
+- Swaggger Hub (with [SwaggerHub API Auto Mocking](https://app.swaggerhub.com/help/integrations/api-auto-mocking)
+activated) : https://app.swaggerhub.com/apis/JMLamodiere/tdd-demo_forum_php_2020/1.0.0
+
+Example :
+
+    curl -i -X PUT "https://virtserver.swaggerhub.com/JMLamodiere/tdd-demo_forum_php_2020/1.0.0/runningsessions/42" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"id\":42,\"distance\":5.5,\"shoes\":\"Adadis Turbo2\"}"
 
 ## Makefile
 
@@ -76,12 +81,6 @@ make start
 
 - Symfony homepage (404): https://127.0.0.1:8000/
 - Symfony profiler: https://127.0.0.1:8000/_profiler/
-
-### SwaggerHub mock server
-
-An online mock server is auto-generated based on openapi doc at https://virtserver.swaggerhub.com/JMLamodiere/tdd-demo_forum_php_2020/1.0.0 . Example :
-
-    curl -i -X PUT "https://virtserver.swaggerhub.com/JMLamodiere/tdd-demo_forum_php_2020/1.0.0/runningsessions/42" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"id\":42,\"distance\":5.5,\"shoes\":\"Adadis Turbo2\"}"
 
 ## Postgresql
 
