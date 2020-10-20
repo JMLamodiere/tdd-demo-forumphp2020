@@ -6,15 +6,20 @@ namespace App\Infrastructure\Symfony\Serializer;
 
 use App\Domain\RunningSession;
 
-class RunningSessionNormalizer
+class RunningSessionSerializer
 {
-    public function normalize(RunningSession $session): array
+    /**
+     * @throws \JsonException
+     */
+    public function serialize(RunningSession $session): string
     {
-        return [
+        $data = [
             'id' => $session->getId(),
             'distance' => $session->getDistance(),
             'shoes' => $session->getShoes(),
             'temperatureCelcius' => $session->getMetricTemperature(),
         ];
+
+        return json_encode($data, JSON_THROW_ON_ERROR);
     }
 }

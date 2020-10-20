@@ -9,6 +9,9 @@ use GuzzleHttp\Client;
 use PHPUnit\Framework\TestCase;
 use WireMock\Client\WireMock;
 
+/**
+ * @group integration
+ */
 class RestWeatherProviderTest extends TestCase
 {
     private RestWeatherProvider $provider;
@@ -39,40 +42,18 @@ class RestWeatherProviderTest extends TestCase
     public function testTemperatureIsExtractedFrom200Response()
     {
         // Given (Arrange)
+        $body = CurrentConditionDeserializerTest::createBody();
         $this->wireMock->stubFor(WireMock::get(WireMock::urlEqualTo($this->currentConditionUri))
             ->willReturn(WireMock::aResponse()
                 ->withHeader('Content-Type', 'application/json')
-                ->withBody(<<<EOD
-[{
-	"LocalObservationDateTime": "2020-10-17T17:50:00+02:00",
-	"EpochTime": 1602949800,
-	"WeatherText": "Mostly cloudy",
-	"WeatherIcon": 6,
-	"HasPrecipitation": false,
-	"PrecipitationType": null,
-	"IsDayTime": true,
-	"Temperature": {
-		"Metric": {
-			"Value": 37.2,
-			"Unit": "C",
-			"UnitType": 17
-		},
-		"Imperial": {
-			"Value": 55.0,
-			"Unit": "F",
-			"UnitType": 18
-		}
-	},
-	"MobileLink": "http://m.accuweather.com/en/fr/paris/623/current-weather/623?lang=en-us",
-	"Link": "http://www.accuweather.com/en/fr/paris/623/current-weather/623?lang=en-us"
-}]
-EOD)));
+                ->withBody($body)));
 
         // When (Act)
         $result = $this->provider->getCurrentCelciusTemperature();
 
         // Then (Assert)
-        self::assertSame(37.2, $result);
+        // less strict assertion (type only): assertions about deserialization are in CurrentConditionDeserializerTest
+        self::assertIsFloat($result);
     }
 
     public function test404ResponseIsConvertedToDomainException()

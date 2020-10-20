@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Database;
 
-use App\Domain\RunningSession;
+use App\Domain\RunningSessionFactory;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -38,27 +39,32 @@ class PostgresRunningSessionRepositoryTest extends TestCase
     public function testRunningSessionIsInserted()
     {
         //When (Act)
-        $session = new RunningSession(55, 122.3, 'The shoes!', 34.5);
+        $session = RunningSessionFactory::create(55, 122.3, 'The shoes!', 34.5);
         $this->repository->add($session);
 
         //Then (Assert)
-        $this->thenRunningSessionTableShouldContain(55, [
-            //DB result will be strings
-            'distance' => '122.3',
+        self::thenRunningSessionTableShouldContain($this->dbal, 55, [
+            'distance' => 122.3,
             'shoes' => 'The shoes!',
-            'temperature_celcius' => '34.5',
+            'temperature_celcius' => 34.5,
         ]);
     }
 
-    private function thenRunningSessionTableShouldContain(int $id, array $expectedArray)
+    /**
+     * @throws \Doctrine\DBAL\Exception
+     * @throws ExpectationFailedException
+     */
+    public static function thenRunningSessionTableShouldContain(Connection $dbal, int $id, array $expectedArray): void
     {
-        $row = $this->dbal->fetchAssociative(
+        $row = $dbal->fetchAssociative(
             'SELECT distance, shoes, temperature_celcius '
             .' FROM RUNNING_SESSION'
             .' WHERE ID = :id', [':id' => $id]);
 
         self::assertIsArray($row, 'No session found with this id');
 
+        //DB result will be strings
+        $expectedArray = array_map('strval', $expectedArray);
         //Avoid failing if key order is different
         asort($row);
         asort($expectedArray);

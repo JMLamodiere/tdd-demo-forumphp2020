@@ -29,6 +29,7 @@ branches:
     - integration_infra_medium_domain
     - integration_infra_medium_domain_wiremock
     - integration_infra_medium_domain_no_di
+    - integration_infra_sociable
 
 before_install:
   - make preinstall

@@ -1,6 +1,8 @@
 openapi: 3.0.3
 info:
   title: TDD Demo ForumPHP 2020
+  description: |
+    See [JMLamodiere/tdd-demo-forumphp2020](https://github.com/JMLamodiere/tdd-demo-forumphp2020/blob/main/README.md) on GitHub.
 
   version: 1.0.0
 

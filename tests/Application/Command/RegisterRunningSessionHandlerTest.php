@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Command;
 
 use App\Domain\RunningSession;
+use App\Domain\RunningSessionFactory;
 use App\Domain\RunningSessionRepository;
 use App\Domain\WeatherProvider;
 use PHPUnit\Framework\TestCase;
@@ -45,7 +46,7 @@ class RegisterRunningSessionHandlerTest extends TestCase
         ));
 
         //Then (Assert)
-        $this->thenARunningSessionShouldBeAdded(new RunningSession(
+        $this->thenARunningSessionShouldBeAdded(RunningSessionFactory::create(
             12,
             125.7,
             'shoes',

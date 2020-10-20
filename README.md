@@ -30,6 +30,11 @@ decoupling HTTP tests with the library being used for HTTP calls.
    [(see Pull Request)](https://github.com/JMLamodiere/tdd-demo-forumphp2020/pull/15)
    removes [Dependency Injection Container](https://www.loosecouplings.com/2011/01/dependency-injection-using-di-container.html)
    usage and manually build tested classes instead.
+1. [integration_infra_sociable](https://github.com/JMLamodiere/tdd-demo-forumphp2020/tree/integration_infra_sociable) branch
+   [(see Pull Request)](https://github.com/JMLamodiere/tdd-demo-forumphp2020/pull/16)
+   replaces medium sized tests with [Overlapping Sociable Tests](https://www.jamesshore.com/v2/blog/2018/testing-without-mocks#sociable-tests)
+   to allow easily test and evolve individual behaviours (ex : class serialization) while still being able to
+   split/merge/refactor classes inside some class clusters by not checking specific calls between them.
 1. (todo...)
 
 ## API documentation

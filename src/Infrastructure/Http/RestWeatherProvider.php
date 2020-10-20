@@ -39,7 +39,7 @@ class RestWeatherProvider implements WeatherProvider
         }
 
         try {
-            return $this->serializer->deserialize($response);
+            return $this->serializer->deserialize($response->getBody()->getContents());
         } catch (\Exception $previous) {
             throw new CannotGetCurrentTemperature('Cannot decode current condition', 0, $previous);
         }
