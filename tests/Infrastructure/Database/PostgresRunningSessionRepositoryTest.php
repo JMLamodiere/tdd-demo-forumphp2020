@@ -43,7 +43,7 @@ class PostgresRunningSessionRepositoryTest extends TestCase
         $this->repository->add($session);
 
         //Then (Assert)
-        self::thenRunningSessionTableShouldContain($this->dbal, 55, [
+        self::thenRunningSessionTableShouldContain(55, [
             'distance' => 122.3,
             'shoes' => 'The shoes!',
             'temperature_celcius' => 34.5,
@@ -54,9 +54,9 @@ class PostgresRunningSessionRepositoryTest extends TestCase
      * @throws \Doctrine\DBAL\Exception
      * @throws ExpectationFailedException
      */
-    public static function thenRunningSessionTableShouldContain(Connection $dbal, int $id, array $expectedArray): void
+    private function thenRunningSessionTableShouldContain(int $id, array $expectedArray): void
     {
-        $row = $dbal->fetchAssociative(
+        $row = $this->dbal->fetchAssociative(
             'SELECT distance, shoes, temperature_celcius '
             .' FROM RUNNING_SESSION'
             .' WHERE ID = :id', [':id' => $id]);

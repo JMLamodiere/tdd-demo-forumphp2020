@@ -1,41 +1,36 @@
 <?php
 
-use App\Infrastructure\Database\PostgresRunningSessionRepository;
-use App\Infrastructure\Database\PostgresRunningSessionRepositoryTest;
-use App\Infrastructure\Http\CurrentConditionDeserializerTest;
+use App\Domain\RunningSessionFactory;
+use App\Domain\RunningSessionRepository;
+use App\Domain\WeatherProvider;
 use App\Infrastructure\Symfony\Serializer\RegisterRunningSessionDeserializerTest;
 use Behat\Behat\Context\Context;
-use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Assert;
+use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
-use WireMock\Client\WireMock;
 
 class FeatureContext implements Context
 {
-    private KernelInterface $kernel;
-    private Connection $dbal;
-    private WireMock $wireMock;
-    private ?Response $response;
-    private string $accuweatherApiKey;
+    use BehatProphecyTrait;
 
-    public function __construct(KernelInterface $kernel, Connection $dbal, WireMock $wireMock, string $accuweatherApiKey)
+    private KernelInterface $kernel;
+    private ?Response $response;
+    /** @var ObjectProphecy|WeatherProvider */
+    private $weatherProvider;
+    /** @var ObjectProphecy|RunningSessionRepository */
+    private $runningSessionRepository;
+
+    public function __construct(KernelInterface $kernel)
     {
         $this->kernel = $kernel;
-        $this->wireMock = $wireMock;
-        Assert::assertTrue($this->wireMock->isAlive(), 'Wiremock should be alive');
-        $this->dbal = $dbal;
-        $this->accuweatherApiKey = $accuweatherApiKey;
-    }
 
-    /**
-     * @BeforeScenario
-     */
-    public function resetState()
-    {
-        $this->wireMock->reset();
-        $this->dbal->executeStatement('TRUNCATE TABLE '.PostgresRunningSessionRepository::TABLE_NAME);
+        $this->weatherProvider = $this->prophesize(WeatherProvider::class);
+        $kernel->getContainer()->set(WeatherProvider::class, $this->weatherProvider->reveal());
+
+        $this->runningSessionRepository = $this->prophesize(RunningSessionRepository::class);
+        $kernel->getContainer()->set(RunningSessionRepository::class, $this->runningSessionRepository->reveal());
     }
 
     /**
@@ -43,13 +38,9 @@ class FeatureContext implements Context
      */
     public function currentTemperatureIs($temperature)
     {
-        $uri = '/currentconditions/v1/623?apikey='.$this->accuweatherApiKey;
-        $body = CurrentConditionDeserializerTest::createBody($temperature);
-
-        $this->wireMock->stubFor(WireMock::get(WireMock::urlEqualTo($uri))
-            ->willReturn(WireMock::aResponse()
-                ->withHeader('Content-Type', 'application/json')
-                ->withBody($body)));
+        $this->weatherProvider
+            ->getCurrentCelciusTemperature()
+            ->willReturn($temperature);
     }
 
     /**
@@ -69,10 +60,14 @@ class FeatureContext implements Context
     public function aRunningSessionShouldBeAddedWith($id, $distance, $shoes, $temperature)
     {
         Assert::assertEquals(201, $this->response->getStatusCode());
-        PostgresRunningSessionRepositoryTest::thenRunningSessionTableShouldContain($this->dbal, $id, [
-            'distance' => $distance,
-            'shoes' => $shoes,
-            'temperature_celcius' => $temperature,
-        ]);
+
+        $this->runningSessionRepository
+            ->add(RunningSessionFactory::create(
+                $id,
+                $distance,
+                $shoes,
+                $temperature
+            ))
+            ->shouldHaveBeenCalled();
     }
 }

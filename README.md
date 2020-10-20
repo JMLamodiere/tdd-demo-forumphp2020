@@ -35,7 +35,12 @@ decoupling HTTP tests with the library being used for HTTP calls.
    replaces medium sized tests with [Overlapping Sociable Tests](https://www.jamesshore.com/v2/blog/2018/testing-without-mocks#sociable-tests)
    to allow easily test and evolve individual behaviours (ex : class serialization) while still being able to
    split/merge/refactor classes inside some class clusters by not checking specific calls between them.
-1. (todo...)
+1. [mock_secondary_ports_in_behat](https://github.com/JMLamodiere/tdd-demo-forumphp2020/tree/mock_secondary_ports_in_behat) branch
+   [(see Pull Request)](https://github.com/JMLamodiere/tdd-demo-forumphp2020/pull/18): Mock Secondary Ports
+   (according to [Hexagonal architecture](https://alistair.cockburn.us/hexagonal-architecture/)) in
+   [Behat](https://behat.org). Makes behat tests much faster and
+   easier to write. Pre-requisite : well defined secondary ports and Integration tests on their
+   Infrastructure layer implementation.
 
 ## API documentation
 
