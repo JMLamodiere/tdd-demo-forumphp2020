@@ -6,7 +6,7 @@ namespace App\Infrastructure\Symfony\Controller;
 
 use App\Application\Command\RegisterRunningSessionHandler;
 use App\Infrastructure\Symfony\Serializer\RegisterRunningSessionDeserializer;
-use App\Infrastructure\Symfony\Serializer\RunningSessionNormalizer;
+use App\Infrastructure\Symfony\Serializer\RunningSessionSerializer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,16 +17,16 @@ use Webmozart\Assert\Assert;
 class RunningSessionController extends AbstractController
 {
     private RegisterRunningSessionDeserializer $commandDeserializer;
-    private RunningSessionNormalizer $responseNormalizer;
+    private RunningSessionSerializer $responseSerializer;
     private RegisterRunningSessionHandler $registerRunningSessionHandler;
 
     public function __construct(
         RegisterRunningSessionDeserializer $commandDeserializer,
-        RunningSessionNormalizer $responseNormalizer,
+        RunningSessionSerializer $responseSerializer,
         RegisterRunningSessionHandler $registerRunningSessionHandler
     ) {
         $this->commandDeserializer = $commandDeserializer;
-        $this->responseNormalizer = $responseNormalizer;
+        $this->responseSerializer = $responseSerializer;
         $this->registerRunningSessionHandler = $registerRunningSessionHandler;
     }
 
@@ -40,6 +40,12 @@ class RunningSessionController extends AbstractController
 
         $session = $this->registerRunningSessionHandler->handle($command);
 
-        return new JsonResponse($this->responseNormalizer->normalize($session), Response::HTTP_CREATED);
+        return new JsonResponse(
+            $this->responseSerializer->serialize($session),
+            Response::HTTP_CREATED,
+            [],
+            //json is already encoded by serializer
+            true
+        );
     }
 }

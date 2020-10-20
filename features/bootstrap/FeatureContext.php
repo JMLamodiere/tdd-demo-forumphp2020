@@ -1,6 +1,9 @@
 <?php
 
 use App\Infrastructure\Database\PostgresRunningSessionRepository;
+use App\Infrastructure\Database\PostgresRunningSessionRepositoryTest;
+use App\Infrastructure\Http\CurrentConditionDeserializerTest;
+use App\Infrastructure\Symfony\Serializer\RegisterRunningSessionDeserializerTest;
 use Behat\Behat\Context\Context;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Assert;
@@ -41,31 +44,7 @@ class FeatureContext implements Context
     public function currentTemperatureIs($temperature)
     {
         $uri = '/currentconditions/v1/623?apikey='.$this->accuweatherApiKey;
-        $body = <<<EOD
-[{
-	"LocalObservationDateTime": "2020-10-17T17:50:00+02:00",
-	"EpochTime": 1602949800,
-	"WeatherText": "Mostly cloudy",
-	"WeatherIcon": 6,
-	"HasPrecipitation": false,
-	"PrecipitationType": null,
-	"IsDayTime": true,
-	"Temperature": {
-		"Metric": {
-			"Value": $temperature,
-			"Unit": "C",
-			"UnitType": 17
-		},
-		"Imperial": {
-			"Value": 55.0,
-			"Unit": "F",
-			"UnitType": 18
-		}
-	},
-	"MobileLink": "http://m.accuweather.com/en/fr/paris/623/current-weather/623?lang=en-us",
-	"Link": "http://www.accuweather.com/en/fr/paris/623/current-weather/623?lang=en-us"
-}]
-EOD;
+        $body = CurrentConditionDeserializerTest::createBody($temperature);
 
         $this->wireMock->stubFor(WireMock::get(WireMock::urlEqualTo($uri))
             ->willReturn(WireMock::aResponse()
@@ -78,16 +57,10 @@ EOD;
      */
     public function iRegisterARunningSessionWith($id, $distance, $shoes)
     {
-        $request = Request::create('/runningsessions/'.$id, 'PUT', [], [], [], [], <<<EOD
-{
-  "id": $id,
-  "distance": $distance,
-  "shoes": "$shoes"
-}
-EOD
-);
+        $body = RegisterRunningSessionDeserializerTest::createBody($id, $distance, $shoes);
+        $request = Request::create('/runningsessions/'.$id, 'PUT', [], [], [], [], $body);
 
-        $this->response = $this->kernel->handle($request); //, HttpKernelInterface::MASTER_REQUEST, false);
+        $this->response = $this->kernel->handle($request);
     }
 
     /**
@@ -96,15 +69,10 @@ EOD
     public function aRunningSessionShouldBeAddedWith($id, $distance, $shoes, $temperature)
     {
         Assert::assertEquals(201, $this->response->getStatusCode());
-
-        $row = $this->dbal->fetchAssociative(
-            'SELECT distance, shoes, temperature_celcius '
-            .' FROM '.PostgresRunningSessionRepository::TABLE_NAME
-            .' WHERE ID = :id', [':id' => $id]);
-
-        Assert::assertIsArray($row, 'No session found with this id');
-        Assert::assertEquals($distance, $row['distance']);
-        Assert::assertEquals($shoes, $row['shoes']);
-        Assert::assertEquals($temperature, $row['temperature_celcius']);
+        PostgresRunningSessionRepositoryTest::thenRunningSessionTableShouldContain($this->dbal, $id, [
+            'distance' => $distance,
+            'shoes' => $shoes,
+            'temperature_celcius' => $temperature,
+        ]);
     }
 }
