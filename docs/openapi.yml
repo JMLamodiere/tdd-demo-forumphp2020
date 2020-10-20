@@ -4,6 +4,9 @@ info:
   description: |
     See [JMLamodiere/tdd-demo-forumphp2020](https://github.com/JMLamodiere/tdd-demo-forumphp2020/blob/main/README.md) on GitHub.
 
+    To call [SwaggerHub API Auto Mocking](https://app.swaggerhub.com/help/integrations/api-auto-mocking) urls,
+    choose `virtserver.swaggerhub.com` in `Servers` list
+
   version: 1.0.0
 
 # See https://swagger.io/docs/specification/paths-and-operations/
@@ -62,7 +65,8 @@ components:
       required: [ temperatureCelcius ]
       properties:
         temperatureCelcius:
-          type: float
+          type: number
+          format: float
           example: 37.2
 
     RunningSessionId:
