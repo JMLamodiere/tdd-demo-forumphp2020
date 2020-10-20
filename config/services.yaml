@@ -32,6 +32,12 @@ services:
     App\Application\Command\RegisterRunningSessionHandler:
         public: true
 
+    # Mark Secondary Ports (Hexagonal Architecture meaning) public to allow mocking them in behat tests
+    App\Domain\WeatherProvider:
+        public: true
+    App\Domain\RunningSessionRepository:
+        public: true
+
     guzzle.accuweather:
         class: GuzzleHttp\Client
         arguments:
