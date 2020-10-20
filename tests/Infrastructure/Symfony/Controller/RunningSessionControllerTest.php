@@ -7,26 +7,33 @@ namespace App\Infrastructure\Symfony\Controller;
 use App\Application\Command\RegisterRunningSession;
 use App\Application\Command\RegisterRunningSessionHandler;
 use App\Domain\RunningSession;
+use App\Infrastructure\Symfony\Serializer\RegisterRunningSessionDeserializer;
+use App\Infrastructure\Symfony\Serializer\RunningSessionNormalizer;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class RunningSessionControllerTest extends KernelTestCase
+class RunningSessionControllerTest extends TestCase
 {
     use ProphecyTrait;
 
     /** @var ObjectProphecy|RegisterRunningSessionHandler */
     private $registerRunningSessionHandler;
 
+    private RunningSessionController $controller;
+
     protected function setUp(): void
     {
-        self::bootKernel();
-
         $this->registerRunningSessionHandler = $this->prophesize(RegisterRunningSessionHandler::class);
-        self::$container->set(RegisterRunningSessionHandler::class, $this->registerRunningSessionHandler->reveal());
+
+        $this->controller = new RunningSessionController(
+            new RegisterRunningSessionDeserializer(),
+            new RunningSessionNormalizer(),
+            $this->registerRunningSessionHandler->reveal()
+        );
     }
 
     public function testPutRouteSendsCommandToHandlerAndDisplayItsResult()
@@ -35,7 +42,7 @@ class RunningSessionControllerTest extends KernelTestCase
         $this->givenHandlerResponseIs(new RunningSession(42, 5.5, 'Adadis Turbo2', 37.2));
 
         //When (Act)
-        $response = $this->whenISendThisRequest(Request::create('/runningsessions/42', 'PUT', [], [], [], [], <<<EOD
+        $response = $this->whenISendThisRequest('42', Request::create('uri_not_used', 'method_not_used', [], [], [], [], <<<EOD
 {
   "id": 42,
   "distance": 5.5,
@@ -63,9 +70,9 @@ EOD, $response);
             ->willReturn($handlerResponse);
     }
 
-    private function whenISendThisRequest(Request $request): Response
+    private function whenISendThisRequest(string $id, Request $request): Response
     {
-        return self::$kernel->handle($request);
+        return $this->controller->put($id, $request);
     }
 
     private function thenThisCommandHasBeenSentToHandler(RegisterRunningSession $expectedCommand)

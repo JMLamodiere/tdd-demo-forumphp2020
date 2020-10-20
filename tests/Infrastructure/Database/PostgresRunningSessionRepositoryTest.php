@@ -6,21 +6,27 @@ namespace App\Infrastructure\Database;
 
 use App\Domain\RunningSession;
 use Doctrine\DBAL\Connection;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Doctrine\DBAL\DriverManager;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @group integration
  */
-class PostgresRunningSessionRepositoryTest extends KernelTestCase
+class PostgresRunningSessionRepositoryTest extends TestCase
 {
     private Connection $dbal;
     private PostgresRunningSessionRepository $repository;
 
     protected function setUp(): void
     {
-        self::bootKernel();
-        $this->dbal = self::$container->get('doctrine.dbal.default_connection');
-        $this->repository = self::$container->get(PostgresRunningSessionRepository::class);
+        //see https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html#getting-a-connection
+        $connectionParams = [
+            // Same as .env.test
+            'url' => 'postgres://forumphp:forumphp@database:5432/forumphp?sslmode=disable&charset=utf8',
+        ];
+        $this->dbal = DriverManager::getConnection($connectionParams);
+
+        $this->repository = new PostgresRunningSessionRepository($this->dbal);
         $this->resetState();
     }
 
