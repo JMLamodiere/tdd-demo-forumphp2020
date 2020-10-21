@@ -29,13 +29,8 @@ services:
     # please note that last definitions always *replace* previous ones
 
     # Mark Command/Query handlers public to allow mocking them in controller tests
+    # To be done in config/services.yml if concrete class, or in config/packages/test/services.yml if Interface
     App\Application\Command\RegisterRunningSessionHandler:
-        public: true
-
-    # Mark Secondary Ports (Hexagonal Architecture meaning) public to allow mocking them in behat tests
-    App\Domain\WeatherProvider:
-        public: true
-    App\Domain\RunningSessionRepository:
         public: true
 
     guzzle.accuweather:
