@@ -77,6 +77,13 @@ Pre-requisites (see [composer.json](composer.json)) :
 - ext-pgsql
 - [Symfony local web server](https://symfony.com/doc/current/setup/symfony_server.html)
 
+Create an account on [OpenWeatherMap](https://home.openweathermap.org/api_keys) and copy your api key:
+
+```
+# in /.env.dev.local
+OPENWEATHER_API_KEY=xxx
+```
+
 Start local dev environment with:
 
 ```

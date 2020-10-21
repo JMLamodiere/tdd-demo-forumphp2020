@@ -7,3 +7,8 @@ services:
         factory: ['WireMock\Client\WireMock', 'create']
         # See docker-compose.yml
         arguments: ['wiremock', '8080']
+
+    # Mark Secondary Ports (Hexagonal Architecture meaning) public to allow mocking them in behat tests
+    # To be done in config/services.yml if concrete class, or in config/packages/test/services.yml if Interface
+    App\Domain\WeatherProvider: ~
+    App\Domain\RunningSessionRepository: ~
