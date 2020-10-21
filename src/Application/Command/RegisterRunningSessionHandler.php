@@ -6,6 +6,7 @@ namespace App\Application\Command;
 
 use App\Domain\RunningSession;
 use App\Domain\RunningSessionRepository;
+use App\Domain\Temperature;
 use App\Domain\WeatherProvider;
 
 class RegisterRunningSessionHandler
@@ -27,7 +28,7 @@ class RegisterRunningSessionHandler
             $command->getId(),
             $command->getDistance(),
             $command->getShoes(),
-            $currentTemperature
+            new Temperature($currentTemperature)
         );
 
         $this->repository->add($session);
