@@ -12,9 +12,9 @@ use WireMock\Client\WireMock;
 /**
  * @group integration
  */
-class RestWeatherProviderTest extends TestCase
+class HttpAccuWeatherProviderTest extends TestCase
 {
-    private RestWeatherProvider $provider;
+    private HttpAccuWeatherProvider $provider;
     private WireMock $wireMock;
     private string $currentConditionUri;
 
@@ -25,7 +25,7 @@ class RestWeatherProviderTest extends TestCase
         $host = 'wiremock';
         $port = '8080';
 
-        $this->provider = new RestWeatherProvider(
+        $this->provider = new HttpAccuWeatherProvider(
             // See https://docs.guzzlephp.org/en/stable/quickstart.html#creating-a-client
             new Client(['base_uri' => "http://$host:$port/"]),
             $accuweatherApiKey,
