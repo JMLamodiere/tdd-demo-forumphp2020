@@ -81,11 +81,11 @@ Pre-requisites (see [composer.json](composer.json)) :
 - ext-pgsql
 - [Symfony local web server](https://symfony.com/doc/current/setup/symfony_server.html)
 
-Create an account on [OpenWeatherMap](https://home.openweathermap.org/api_keys) and copy your api key:
+Create an App on [AccuWeather](https://developer.accuweather.com/) and copy your API Key:
 
 ```
 # in /.env.dev.local
-OPENWEATHER_API_KEY=xxx
+ACCUWEATHER_API_KEY=xxx
 ```
 
 Start local dev environment with:

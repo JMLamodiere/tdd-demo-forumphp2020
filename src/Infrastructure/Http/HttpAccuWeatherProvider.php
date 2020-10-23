@@ -9,8 +9,9 @@ use App\Domain\WeatherProvider;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
-class RestWeatherProvider implements WeatherProvider
+class HttpAccuWeatherProvider implements WeatherProvider
 {
+    // See https://developer.accuweather.com/accuweather-current-conditions-api/apis
     public const CURRENT_CONDITION_URI = 'currentconditions/v1/%d?apikey=%s';
     public const LOCATION_KEY_PARIS = 623;
 

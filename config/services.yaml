@@ -38,7 +38,7 @@ services:
         arguments:
             -   base_uri: '%env(ACCUWEATHER_BASE_URI)%'
 
-    App\Infrastructure\Http\RestWeatherProvider:
+    App\Infrastructure\Http\HttpAccuWeatherProvider:
         arguments:
             $client: '@guzzle.accuweather'
             $apiKey: '%env(ACCUWEATHER_API_KEY)%'
