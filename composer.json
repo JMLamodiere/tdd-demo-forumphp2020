@@ -24,9 +24,11 @@
         "behat/symfony2-extension": "^2.1",
         "friendsofphp/php-cs-fixer": "^2.16",
         "nelmio/cors-bundle": "^2.1",
+        "nyholm/psr7": "^1.3",
         "phpspec/prophecy-phpunit": "^2.0",
         "phpunit/phpunit": "^9.4",
         "symfony/phpunit-bridge": "^5.1",
+        "symfony/psr-http-message-bridge": "^2.0",
         "symfony/web-profiler-bundle": "4.4.*",
         "wiremock-php/wiremock-php": "^2.27"
     },
