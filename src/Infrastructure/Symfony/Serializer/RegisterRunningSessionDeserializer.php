@@ -10,7 +10,6 @@ class RegisterRunningSessionDeserializer
 {
     public function deserialize($content): RegisterRunningSession
     {
-        //@todo : validate data against json schema
         $data = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
 
         return new RegisterRunningSession(

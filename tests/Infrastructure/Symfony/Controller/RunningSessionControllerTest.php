@@ -37,8 +37,11 @@ class RunningSessionControllerTest extends KernelTestCase
         $this->givenHandlerResponseIsARunningSession();
 
         //When (Act)
+        $server = ['CONTENT_TYPE' => 'application/json'];
         $body = RegisterRunningSessionDeserializerTest::createBody(42);
-        $response = $this->whenISendThisRequest(Request::create('/runningsessions/42', 'PUT', [], [], [], [], $body));
+        $response = $this->whenISendThisRequest(
+            Request::create('/runningsessions/42', 'PUT', [], [], [], $server, $body)
+        );
 
         //Then (Assert)
         //less strict assertion (type only): see RegisterRunningSessionDeserializer for conversion from json to command object
@@ -49,6 +52,21 @@ class RunningSessionControllerTest extends KernelTestCase
         self::assertSame('application/json', $response->headers->get('Content-Type'));
     }
 
+    public function testPutRouteReturns400IfInvalidBody()
+    {
+        //When (Act)
+        $server = ['CONTENT_TYPE' => 'application/json'];
+        $body = '{"unexpected": "body"}';
+        $response = $this->whenISendThisRequest(
+            Request::create('/runningsessions/42', 'PUT', [], [], [], $server, $body),
+            $letSymfonyConvertExceptions = true
+        );
+
+        //Then (Assert)
+        self::assertSame(400, $response->getStatusCode());
+        self::assertSame('application/json', $response->headers->get('Content-Type'));
+    }
+
     private function givenHandlerResponseIsARunningSession()
     {
         $this->registerRunningSessionHandler
@@ -56,10 +74,10 @@ class RunningSessionControllerTest extends KernelTestCase
             ->willReturn(RunningSessionFactory::create());
     }
 
-    private function whenISendThisRequest(Request $request): Response
+    private function whenISendThisRequest(Request $request, $letSymfonyConvertExceptions = false): Response
     {
         //$catch=false: prevents Symfony from catching exceptions
-        return self::$kernel->handle($request, HttpKernelInterface::MASTER_REQUEST, false);
+        return self::$kernel->handle($request, HttpKernelInterface::MASTER_REQUEST, $letSymfonyConvertExceptions);
     }
 
     private function thenARegisterRunningSessionCommandHasBeenSentToHandler()
