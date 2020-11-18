@@ -2,12 +2,11 @@
 
 [![Build Status](https://travis-ci.com/JMLamodiere/tdd-demo-forumphp2020.svg?branch=main)](https://travis-ci.com/JMLamodiere/tdd-demo-forumphp2020)
 
-Live coding examples used during [Forum PHP 2020 talk](https://event.afup.org/forum-php-2020/programme-forum-php-2020/#3414):
+Live coding examples used during [Forum PHP 2020 talk](https://afup.org/talks/3414-trop-de-mock-tue-le-test-ce-que-l-archi-hexagonale-a-change):
 
-- [:uk: Too many mocks killed the test: What Hexagonal Architecture has changed](https://speakerdeck.com/jmlamodiere/too-many-mocks-killed-the-test-what-hexagonal-architecture-has-changed)
-- [:fr: Trop de mock tue le test : ce que l'archi hexagonale a changé](https://speakerdeck.com/jmlamodiere/trop-de-mock-tue-le-test-ce-que-larchi-hexagonale-a-change)
-
-*(video not published yet)*
+- [:fr: :arrow_forward: Voir sur Youtube](http://www.youtube.com/watch?v=rSO1y3lCBfk)
+- [:fr: :clipboard: Trop de mock tue le test : ce que l'archi hexagonale a changé](https://speakerdeck.com/jmlamodiere/trop-de-mock-tue-le-test-ce-que-larchi-hexagonale-a-change)
+- [:uk: :clipboard: Too many mocks killed the test: What Hexagonal Architecture has changed](https://speakerdeck.com/jmlamodiere/too-many-mocks-killed-the-test-what-hexagonal-architecture-has-changed)
 
 For a bit of theory, see [:fr: De CRUD à DDD, comment Meetic a sauvé son legacy](https://afup.org/talks/3037-de-crud-a-ddd-comment-meetic-a-sauve-son-legacy)
 
