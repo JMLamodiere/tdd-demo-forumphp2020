@@ -1,0 +1,15 @@
+services:
+
+    Nyholm\Psr7\Factory\Psr17Factory:
+        # Allows getting it in tests
+        public: true
+
+    Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface:
+        class: 'Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory'
+    Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface:
+        class: 'Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory'
+        arguments:
+            - '@Nyholm\Psr7\Factory\Psr17Factory'
+            - '@Nyholm\Psr7\Factory\Psr17Factory'
+            - '@Nyholm\Psr7\Factory\Psr17Factory'
+            - '@Nyholm\Psr7\Factory\Psr17Factory'

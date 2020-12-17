@@ -8,17 +8,18 @@ use App\Application\Command\RegisterRunningSession;
 use App\Application\Command\RegisterRunningSessionHandler;
 use App\Domain\RunningSessionFactory;
 use App\Infrastructure\Symfony\Serializer\RegisterRunningSessionDeserializerTest;
+use App\Psr7Kernel\Psr7KernelTestTrait;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class RunningSessionControllerTest extends KernelTestCase
 {
     use ProphecyTrait;
+    use Psr7KernelTestTrait;
 
     /** @var ObjectProphecy|RegisterRunningSessionHandler */
     private $registerRunningSessionHandler;
@@ -26,6 +27,7 @@ class RunningSessionControllerTest extends KernelTestCase
     protected function setUp(): void
     {
         self::bootKernel();
+        $this->initPsr7Kernel(self::$kernel->getContainer());
 
         $this->registerRunningSessionHandler = $this->prophesize(RegisterRunningSessionHandler::class);
         self::$container->set(RegisterRunningSessionHandler::class, $this->registerRunningSessionHandler->reveal());
@@ -38,7 +40,11 @@ class RunningSessionControllerTest extends KernelTestCase
 
         //When (Act)
         $body = RegisterRunningSessionDeserializerTest::createBody(42);
-        $response = $this->whenISendThisRequest(Request::create('/runningsessions/42', 'PUT', [], [], [], [], $body));
+        $response = $this->whenISendThisRequest($this->psr17Factory
+            ->createServerRequest('PUT', '/runningsessions/42')
+            ->withHeader('Content-Type', 'application/json')
+            ->withBody($this->psr17Factory->createStream($body))
+        );
 
         //Then (Assert)
         //less strict assertion (type only): see RegisterRunningSessionDeserializer for conversion from json to command object
@@ -46,7 +52,7 @@ class RunningSessionControllerTest extends KernelTestCase
 
         //less strict assertion: See RunningSessionSerializerTest for json response creation
         self::assertSame(201, $response->getStatusCode());
-        self::assertSame('application/json', $response->headers->get('Content-Type'));
+        self::assertSame('application/json', $response->getHeaderLine('Content-Type'));
     }
 
     private function givenHandlerResponseIsARunningSession()
@@ -56,10 +62,9 @@ class RunningSessionControllerTest extends KernelTestCase
             ->willReturn(RunningSessionFactory::create());
     }
 
-    private function whenISendThisRequest(Request $request): Response
+    private function whenISendThisRequest(ServerRequestInterface $psr7ServerRequest): ResponseInterface
     {
-        //$catch=false: prevents Symfony from catching exceptions
-        return self::$kernel->handle($request, HttpKernelInterface::MASTER_REQUEST, false);
+        return $this->psr7Kernel->handleOrThrow($psr7ServerRequest);
     }
 
     private function thenARegisterRunningSessionCommandHasBeenSentToHandler()

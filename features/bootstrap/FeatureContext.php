@@ -4,19 +4,19 @@ use App\Domain\RunningSessionFactory;
 use App\Domain\RunningSessionRepository;
 use App\Domain\WeatherProvider;
 use App\Infrastructure\Symfony\Serializer\RegisterRunningSessionDeserializerTest;
+use App\Psr7Kernel\Psr7KernelTestTrait;
 use Behat\Behat\Context\Context;
 use PHPUnit\Framework\Assert;
 use Prophecy\Prophecy\ObjectProphecy;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 class FeatureContext implements Context
 {
     use BehatProphecyTrait;
+    use Psr7KernelTestTrait;
 
-    private KernelInterface $kernel;
-    private ?Response $response;
+    private ?ResponseInterface $response;
     /** @var ObjectProphecy|WeatherProvider */
     private $weatherProvider;
     /** @var ObjectProphecy|RunningSessionRepository */
@@ -24,7 +24,7 @@ class FeatureContext implements Context
 
     public function __construct(KernelInterface $kernel)
     {
-        $this->kernel = $kernel;
+        $this->initPsr7Kernel($kernel->getContainer());
 
         $this->weatherProvider = $this->prophesize(WeatherProvider::class);
         $kernel->getContainer()->set(WeatherProvider::class, $this->weatherProvider->reveal());
@@ -49,9 +49,12 @@ class FeatureContext implements Context
     public function iRegisterARunningSessionWith($id, $distance, $shoes)
     {
         $body = RegisterRunningSessionDeserializerTest::createBody($id, $distance, $shoes);
-        $request = Request::create('/runningsessions/'.$id, 'PUT', [], [], [], [], $body);
+        $request = $this->psr17Factory
+            ->createServerRequest('PUT', '/runningsessions/'.$id)
+            ->withHeader('Content-Type', 'application/json')
+            ->withBody($this->psr17Factory->createStream($body));
 
-        $this->response = $this->kernel->handle($request);
+        $this->response = $this->psr7Kernel->handleOrThrow($request);
     }
 
     /**
