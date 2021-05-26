@@ -18,6 +18,7 @@ class RunningSessionSerializer
             'distance' => $session->getDistance(),
             'shoes' => $session->getShoes(),
             'temperatureCelcius' => $session->getMetricTemperature(),
+            'is_freezing' => $session->isFreezing(),
         ];
 
         return json_encode($data, JSON_THROW_ON_ERROR);

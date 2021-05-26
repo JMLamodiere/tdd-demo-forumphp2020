@@ -9,14 +9,14 @@ class RunningSession
     private int $id;
     private float $distance;
     private string $shoes;
-    private float $metricTemperature;
+    private Temperature $temperature;
 
-    public function __construct(int $id, float $distance, string $shoes, float $metricTemperature)
+    public function __construct(int $id, float $distance, string $shoes, Temperature $temperature)
     {
         $this->id = $id;
         $this->distance = $distance;
         $this->shoes = $shoes;
-        $this->metricTemperature = $metricTemperature;
+        $this->temperature = $temperature;
     }
 
     public function getId(): int
@@ -36,6 +36,11 @@ class RunningSession
 
     public function getMetricTemperature(): float
     {
-        return $this->metricTemperature;
+        return $this->temperature->getMetricTemperature();
+    }
+
+    public function isFreezing(): bool
+    {
+        return $this->temperature->isFreezing();
     }
 }

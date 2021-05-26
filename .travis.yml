@@ -40,3 +40,6 @@ install:
 
 script:
   - make test
+
+after_script:
+  - make prune

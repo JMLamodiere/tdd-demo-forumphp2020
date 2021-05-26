@@ -62,12 +62,14 @@ components:
       allOf:
         # Inherit PutRunningSession
         - $ref: '#/components/schemas/PutRunningSession'
-      required: [ temperatureCelcius ]
+      required: [ temperatureCelcius, is_freezing ]
       properties:
         temperatureCelcius:
           type: number
           format: float
           example: 37.2
+        is_freezing:
+          type: boolean
 
     RunningSessionId:
       type: integer

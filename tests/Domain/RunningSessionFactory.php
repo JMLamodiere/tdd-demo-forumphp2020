@@ -12,6 +12,6 @@ class RunningSessionFactory
         string $shoes = 'shoes_value_not_used',
         float $metricTemperature = 98.76
     ): RunningSession {
-        return new RunningSession($id, $distance, $shoes, $metricTemperature);
+        return new RunningSession($id, $distance, $shoes, new Temperature($metricTemperature));
     }
 }

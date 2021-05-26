@@ -29,7 +29,8 @@ class RunningSessionSerializerTest extends TestCase
   "id": 42,
   "distance": 5.5,
   "shoes": "Adadis Turbo2",
-  "temperatureCelcius": 37.2
+  "temperatureCelcius": 37.2,
+  "is_freezing": false
 }
 EOD;
         self::assertJsonStringEqualsJsonString($expectedJson, $result);
