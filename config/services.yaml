@@ -42,3 +42,17 @@ services:
         arguments:
             $client: '@guzzle.accuweather'
             $apiKey: '%env(ACCUWEATHER_API_KEY)%'
+
+    Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface:
+        class: Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory
+
+    League\OpenAPIValidation\PSR7\ValidatorBuilder: ~
+
+    openapi.validatorbuilder:
+        class: League\OpenAPIValidation\PSR7\ValidatorBuilder
+        factory: ['@League\OpenAPIValidation\PSR7\ValidatorBuilder', 'fromYamlFile']
+        arguments:
+            - "%kernel.project_dir%/docs/openapi.yml"
+
+    League\OpenAPIValidation\PSR7\RequestValidator:
+        factory: ['@openapi.validatorbuilder', 'getRequestValidator']

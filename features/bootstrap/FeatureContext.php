@@ -48,8 +48,9 @@ class FeatureContext implements Context
      */
     public function iRegisterARunningSessionWith($id, $distance, $shoes)
     {
+        $server = ['CONTENT_TYPE' => 'application/json'];
         $body = RegisterRunningSessionDeserializerTest::createBody($id, $distance, $shoes);
-        $request = Request::create('/runningsessions/'.$id, 'PUT', [], [], [], [], $body);
+        $request = Request::create('/runningsessions/'.$id, 'PUT', [], [], [], $server, $body);
 
         $this->response = $this->kernel->handle($request);
     }

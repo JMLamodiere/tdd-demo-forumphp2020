@@ -16,15 +16,18 @@ use Webmozart\Assert\Assert;
 
 class RunningSessionController extends AbstractController
 {
+    private OpenapiRequestValidator $requestValidator;
     private RegisterRunningSessionDeserializer $commandDeserializer;
     private RunningSessionSerializer $responseSerializer;
     private RegisterRunningSessionHandler $registerRunningSessionHandler;
 
     public function __construct(
+        OpenapiRequestValidator $requestValidator,
         RegisterRunningSessionDeserializer $commandDeserializer,
         RunningSessionSerializer $responseSerializer,
         RegisterRunningSessionHandler $registerRunningSessionHandler
     ) {
+        $this->requestValidator = $requestValidator;
         $this->commandDeserializer = $commandDeserializer;
         $this->responseSerializer = $responseSerializer;
         $this->registerRunningSessionHandler = $registerRunningSessionHandler;
@@ -35,6 +38,8 @@ class RunningSessionController extends AbstractController
      */
     public function put(string $id, Request $request): Response
     {
+        $this->requestValidator->validateRequest($request);
+
         $command = $this->commandDeserializer->deserialize($request->getContent());
         Assert::same($command->getId(), (int) $id, 'id must be the same in payload and uri');
 
